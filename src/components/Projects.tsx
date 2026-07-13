@@ -42,12 +42,12 @@ export default function Projects() {
   return (
     <section id="projects" className="bg-background py-20 md:py-28">
       <div className="container mx-auto px-6">
-        <div className="mb-12 text-center" data-aos="fade-up">
+        <div className="mb-12 text-center">
           <h2 className="text-3xl font-extrabold text-accent md:text-5xl">{t("projects.title")}</h2>
           <p className="mt-3 text-muted-foreground">{t("projects.subtitle")}</p>
         </div>
 
-        <div data-aos="fade-up">
+        <div>
           <Swiper
             modules={[Pagination, Navigation, Autoplay, EffectCoverflow]}
             effect="coverflow"

@@ -18,7 +18,7 @@ export default function Appointment() {
   return (
     <section id="appointment" className="relative bg-surface py-20 md:py-28">
       <div className="container mx-auto max-w-3xl px-6">
-        <div className="mb-10 text-center" data-aos="fade-up">
+        <div className="mb-10 text-center">
           <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
             <CalendarCheck className="h-3.5 w-3.5" /> {t("appointment.title")}
           </span>
@@ -30,7 +30,6 @@ export default function Appointment() {
 
         <form
           onSubmit={submit}
-          data-aos="zoom-in"
           className="grid grid-cols-1 gap-4 rounded-3xl border border-border bg-background p-6 shadow-xl md:grid-cols-2 md:p-8"
         >
           <input

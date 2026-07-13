@@ -12,7 +12,7 @@ export default function Contact() {
   return (
     <section id="contact" className="bg-background py-20 md:py-28">
       <div className="container mx-auto grid gap-12 px-6 lg:grid-cols-2">
-        <div data-aos="fade-right" className="space-y-6">
+        <div className="space-y-6">
           <h2 className="text-3xl font-extrabold text-accent md:text-5xl">{t("contact.title")}</h2>
           <p className="text-muted-foreground">{t("contact.subtitle")}</p>
           <ul className="space-y-4">
@@ -33,7 +33,6 @@ export default function Contact() {
 
         <form
           onSubmit={submit}
-          data-aos="fade-left"
           className="space-y-4 rounded-3xl border border-border bg-surface p-6 shadow-xl md:p-8"
         >
           <input

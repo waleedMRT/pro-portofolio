@@ -16,7 +16,7 @@ export default function Hero() {
       />
 
       <div className="container mx-auto grid grid-cols-1 items-center gap-12 px-6 lg:grid-cols-2">
-        <div className="space-y-6" data-aos="fade-up">
+        <div className="space-y-6">
           <span className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1 text-xs font-medium text-accent">
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />
             {t("hero.eyebrow")}
@@ -49,7 +49,7 @@ export default function Hero() {
         </div>
 
         {/* SVG line drawing */}
-        <div className="relative mx-auto w-full max-w-lg" data-aos="zoom-in">
+        <div className="relative mx-auto w-full max-w-lg">
           <svg
             viewBox="0 0 500 500"
             className="svg-draw w-full drop-shadow-xl"

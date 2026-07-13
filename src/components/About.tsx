@@ -18,7 +18,7 @@ export default function About() {
   return (
     <section id="about" className="relative bg-surface py-20 md:py-28">
       <div className="container mx-auto grid gap-12 px-6 lg:grid-cols-2 lg:items-center">
-        <div data-aos="fade-right" className="relative">
+        <div className="relative">
           <div className="mx-auto aspect-square w-72 rounded-[2rem] bg-accent p-2 shadow-2xl md:w-96 animate-float">
             <div className="flex h-full w-full items-center justify-center rounded-[1.7rem] bg-gradient-to-br from-primary to-[#c85a17] text-8xl font-black text-primary-foreground">
               MW
@@ -34,7 +34,7 @@ export default function About() {
           </div>
         </div>
 
-        <div data-aos="fade-left" className="space-y-6">
+        <div className="space-y-6">
           <h2 className="text-3xl font-extrabold text-accent md:text-5xl">{t("about.title")}</h2>
           <p className="text-base text-muted-foreground md:text-lg">{t("about.p1")}</p>
           <p className="text-base text-muted-foreground md:text-lg">{t("about.p2")}</p>

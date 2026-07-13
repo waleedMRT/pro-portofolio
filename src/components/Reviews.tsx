@@ -36,7 +36,7 @@ export default function Reviews() {
   return (
     <section id="reviews" className="bg-accent py-20 text-accent-foreground md:py-28">
       <div className="container mx-auto px-6">
-        <div className="mb-12 text-center" data-aos="fade-up">
+        <div className="mb-12 text-center">
           <h2 className="text-3xl font-extrabold md:text-5xl">{t("reviews.title")}</h2>
           <p className="mt-3 opacity-80">{t("reviews.subtitle")}</p>
         </div>
@@ -53,7 +53,6 @@ export default function Reviews() {
             1024: { slidesPerView: 3 },
           }}
           className="!pb-14"
-          data-aos="fade-up"
         >
           {reviews.map((r, i) => (
             <SwiperSlide key={i}>
