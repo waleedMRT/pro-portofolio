@@ -125,7 +125,7 @@ const resources = {
       },
       orders: {
         title: "Commandes",
-        subtitle: "Gérez les demandes entrantes.",
+        subtitle: "Gorez les demandes entrantes.",
         login: "Connexion admin",
         password: "Mot de passe",
         enter: "Entrer",
@@ -197,13 +197,12 @@ const resources = {
   },
 };
 
-if (!i18n.isInitialized) {
-  i18n.use(initReactI18next).init({
-    resources,
-    lng: typeof window !== "undefined" ? localStorage.getItem("lang") || "en" : "en",
-    fallbackLng: "en",
-    interpolation: { escapeValue: false },
-  });
-}
+// تشغيل التهيئة والربط مباشرة وبدون أي شروط مسبقة لضمان استقرار التطبيق
+i18n.use(initReactI18next).init({
+  resources,
+  lng: typeof window !== "undefined" ? localStorage.getItem("lang") || "ar" : "ar", // جعلنا العربي هو الافتراضي هنا إذا أردت
+  fallbackLng: "en",
+  interpolation: { escapeValue: false },
+});
 
 export default i18n;
