@@ -155,3 +155,9 @@ html[dir="rtl"] .swiper { direction: rtl; }
 @media (min-width: 768px) {
   .pb-bottom-nav { padding-bottom: 0; }
 }
+
+@media (width <= 768px){
+  footer .container{
+    padding-bottom: 5rem;
+  }
+}
