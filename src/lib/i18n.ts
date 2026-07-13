@@ -200,7 +200,7 @@ const resources = {
 // تشغيل التهيئة والربط مباشرة وبدون أي شروط مسبقة لضمان استقرار التطبيق
 i18n.use(initReactI18next).init({
   resources,
-  lng: typeof window !== "undefined" ? localStorage.getItem("lang") || "ar" : "ar", // جعلنا العربي هو الافتراضي هنا إذا أردت
+  lng: typeof window !== "undefined" ? localStorage.getItem("lang") || "en" : "en", // جعلنا العربي هو الافتراضي هنا إذا أردت
   fallbackLng: "en",
   interpolation: { escapeValue: false },
 });
