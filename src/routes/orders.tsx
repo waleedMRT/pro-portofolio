@@ -3,13 +3,12 @@ import { useEffect, useState } from "react";
 import "@/lib/i18n";
 import { useTranslation } from "react-i18next";
 import { useApplyLang } from "@/components/LanguageSwitcher";
-import { ArrowLeft, Lock, Trash2 } from "lucide-react";
+import { ArrowLeft, Lock, Trash2, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/orders")({
   component: Orders,
 });
-
-const ADMIN_PASS = "admin123";
 
 function Orders() {
   useApplyLang();
@@ -17,6 +16,8 @@ function Orders() {
   const [ok, setOk] = useState(false);
   const [pwd, setPwd] = useState("");
   const [err, setErr] = useState("");
+  const [token, setToken] = useState<string | null>(null);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [orders, setOrders] = useState<any[]>([]);
@@ -32,39 +33,102 @@ function Orders() {
     metaRobots.setAttribute("content", "noindex");
   }, []);
 
+  // التحقق من وجود الـ Token عند فتح الصفحة
   useEffect(() => {
-    if (sessionStorage.getItem("admin") === "1") {
+    const savedToken = sessionStorage.getItem("admin_token");
+    if (savedToken) {
+      setToken(savedToken);
       setOk(true);
     }
   }, []);
 
+  // جلب الحجوزات من الـ API بعد تسجيل الدخول بنجاح
   useEffect(() => {
-    if (ok) {
-      try {
-        const localData = localStorage.getItem("orders");
-        setOrders(localData ? JSON.parse(localData) : []);
-      } catch (e) {
-        console.error("Error parsing localStorage data", e);
-        setOrders([]);
-      }
+    if (ok && token) {
+      fetch("https://portfoliomrt.pythonanywhere.com/api/appointments/", {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      })
+        .then((res) => {
+          if (res.status === 401) {
+            handleLogout();
+            throw new Error("Session expired");
+          }
+          return res.json();
+        })
+        .then((data) => setOrders(data))
+        .catch((e) => {
+          console.error("Error fetching appointments:", e);
+        });
     }
-  }, [ok]);
+  }, [ok, token]);
 
-  const login = (e: React.FormEvent) => {
+  // تسجيل الخروج التلقائي في حال انتهاء صلاحية الجلسة
+  const handleLogout = () => {
+    sessionStorage.removeItem("admin_token");
+    setToken(null);
+    setOk(false);
+    setOrders([]);
+  };
+
+  const login = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (pwd === ADMIN_PASS) {
-      sessionStorage.setItem("admin", "1");
-      setOk(true);
-      setErr("");
-    } else {
-      setErr(t("orders.wrong"));
+    setIsLoggingIn(true);
+    setErr("");
+
+    try {
+      const response = await fetch("https://portfoliomrt.pythonanywhere.com/api/auth/login/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: "admin", // القيمة الافتراضية المحددة في الـ View
+          password: pwd,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.token) {
+        sessionStorage.setItem("admin_token", data.token);
+        setToken(data.token);
+        setOk(true);
+        setErr("");
+      } else {
+        setErr(data.error || t("orders.wrong") || "Incorrect password");
+      }
+    } catch (error) {
+      console.error("Login connection error:", error);
+      setErr("Failed to connect to backend server.");
+    } finally {
+      setIsLoggingIn(false);
     }
   };
 
-  const remove = (i: number) => {
-    const next = orders.filter((_, k) => k !== i);
-    setOrders(next);
-    localStorage.setItem("orders", JSON.stringify(next));
+  const remove = async (id: number) => {
+    if (!window.confirm("Are you sure you want to delete this appointment?")) return;
+
+    try {
+      const response = await fetch(`https://portfoliomrt.pythonanywhere.com/api/appointments/${id}/`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const next = orders.filter((o) => o.id !== id);
+        setOrders(next);
+        toast.success("Appointment deleted successfully.");
+      } else {
+        toast.error("Failed to delete appointment.");
+      }
+    } catch (e) {
+      console.error("Error deleting appointment:", e);
+      toast.error("Something went wrong.");
+    }
   };
 
   if (!ok) {
@@ -88,7 +152,11 @@ function Orders() {
             className="h-12 w-full rounded-xl border border-border bg-surface px-4 outline-none focus:ring-2 focus:ring-primary"
           />
           {err && <p className="text-sm text-destructive">{err}</p>}
-          <button className="w-full rounded-xl bg-primary py-3 font-semibold text-primary-foreground shadow-lg shadow-primary/30 transition hover:-translate-y-0.5">
+          <button 
+            disabled={isLoggingIn}
+            className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 font-semibold text-primary-foreground shadow-lg shadow-primary/30 transition hover:-translate-y-0.5 disabled:opacity-50"
+          >
+            {isLoggingIn ? <Loader2 className="h-5 w-5 animate-spin" /> : null}
             {t("orders.enter")}
           </button>
           <Link
@@ -130,9 +198,9 @@ function Orders() {
           </div>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {orders.map((o, i) => (
+            {orders.map((o) => (
               <div
-                key={i}
+                key={o.id}
                 className="card-hover rounded-2xl border border-border bg-background p-5 shadow-sm"
               >
                 <div className="flex items-start justify-between">
@@ -151,7 +219,7 @@ function Orders() {
                     )}
                   </div>
                   <button
-                    onClick={() => remove(i)}
+                    onClick={() => remove(o.id)}
                     className="text-muted-foreground hover:text-destructive"
                   >
                     <Trash2 className="h-4 w-4" />

@@ -1,20 +1,58 @@
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { CalendarCheck } from "lucide-react";
+import { CalendarCheck, Loader2 } from "lucide-react";
 
 export default function Appointment() {
   const { t } = useTranslation();
-  const submit = (e: React.FormEvent<HTMLFormElement>) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const submit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const fd = new FormData(e.currentTarget);
+    
+    const form = e.target as HTMLFormElement;
+    const fd = new FormData(form);
     const order = Object.fromEntries(fd.entries());
-    // Persist locally until DRF is connected
-    const list = JSON.parse(localStorage.getItem("orders") || "[]");
-    list.unshift({ ...order, createdAt: new Date().toISOString() });
-    localStorage.setItem("orders", JSON.stringify(list));
-    toast.success("Appointment requested!");
-    e.currentTarget.reset();
+
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch("https://portfoliomrt.pythonanywhere.com/api/appointments/create/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(order),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        if (errorData) {
+          console.error("تفاصيل خطأ Django:", errorData);
+          // تحويل مصفوفة الأخطاء إلى نص واضح
+          const errorMessages = Object.entries(errorData)
+            .map(([field, errors]) => {
+              const errorText = Array.isArray(errors) ? errors.join(", ") : errors;
+              return `${field}: ${errorText}`;
+            })
+            .join(" | ");
+          toast.error(`خطأ: ${errorMessages}`);
+        } else {
+          toast.error(t("appointment.error_message") || "Something went wrong.");
+        }
+        throw new Error("Failed to submit appointment");
+      }
+
+      // نجاح العملية وتصفير الحقول
+      toast.success(t("appointment.success_message") || "Appointment requested successfully!");
+      form.reset();
+    } catch (error) {
+      console.error("Error submitting appointment:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
   return (
     <section id="appointment" className="relative bg-surface py-20 md:py-28">
       <div className="container mx-auto max-w-3xl px-6">
@@ -32,12 +70,15 @@ export default function Appointment() {
           onSubmit={submit}
           className="grid grid-cols-1 gap-4 rounded-3xl border border-border bg-background p-6 shadow-xl md:grid-cols-2 md:p-8"
         >
+          {/* الاسم */}
           <input
             required
             name="name"
             placeholder={t("appointment.name")}
             className="h-12 rounded-xl border border-border bg-surface px-4 outline-none focus:ring-2 focus:ring-primary"
           />
+
+          {/* البريد الإلكتروني */}
           <input
             required
             type="email"
@@ -45,18 +86,33 @@ export default function Appointment() {
             placeholder={t("appointment.email")}
             className="h-12 rounded-xl border border-border bg-surface px-4 outline-none focus:ring-2 focus:ring-primary"
           />
+
+          {/* رقم الهاتف - تم إرجاعه إلى phone ليطابق Django */}
+          <input
+            required
+            type="tel"
+            name="phone"
+            placeholder={t("appointment.phone") || "Phone Number"}
+            className="h-12 rounded-xl border border-border bg-surface px-4 outline-none focus:ring-2 focus:ring-primary md:col-span-2"
+          />
+
+          {/* التاريخ */}
           <input
             required
             type="date"
             name="date"
             className="h-12 rounded-xl border border-border bg-surface px-4 outline-none focus:ring-2 focus:ring-primary"
           />
+
+          {/* الوقت */}
           <input
             required
             type="time"
             name="time"
             className="h-12 rounded-xl border border-border bg-surface px-4 outline-none focus:ring-2 focus:ring-primary"
           />
+
+          {/* الخدمة - تم تعديل قيم الـ value لتطابق خيارات Django تماماً */}
           <select
             required
             name="service"
@@ -67,17 +123,31 @@ export default function Appointment() {
               {t("appointment.service")}
             </option>
             <option value="web">{t("appointment.services.web")}</option>
-            <option value="design">{t("appointment.services.design")}</option>
-            <option value="consult">{t("appointment.services.consult")}</option>
+            <option value="landing page">{t("appointment.services.landing") || "Landing Page"}</option>
+            <option value="ecommerce">{t("appointment.services.ecommerce") || "E-commerce"}</option>
           </select>
+
+          {/* الملاحظات */}
           <textarea
             name="note"
             rows={4}
             placeholder={t("appointment.note")}
             className="rounded-xl border border-border bg-surface p-4 outline-none focus:ring-2 focus:ring-primary md:col-span-2"
           />
-          <button className="md:col-span-2 inline-flex items-center justify-center gap-2 rounded-xl bg-accent py-3 font-semibold text-accent-foreground transition hover:bg-primary hover:text-primary-foreground">
-            {t("appointment.submit")}
+
+          {/* زر الإرسال */}
+          <button
+            disabled={isSubmitting}
+            className="md:col-span-2 inline-flex items-center justify-center gap-2 rounded-xl bg-accent py-3 font-semibold text-accent-foreground transition hover:bg-primary hover:text-primary-foreground disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                {t("appointment.submitting") || "Sending..."}
+              </>
+            ) : (
+              t("appointment.submit")
+            )}
           </button>
         </form>
       </div>
